@@ -316,19 +316,14 @@ ${this.lotteriesTask.lotteryCount > 0 ? "==============\n" + drawLotteryHistory 
   }
 }
 
-async function run(args) {
+ // 增加 retry 参数，默认0
+async function run(args, retry = 0) {
   const cookies = utils.getUsersCookie(env);
   let messageList = [];
   for (let cookie of cookies) {
     const checkin = new CheckIn(cookie);
 
     await utils.wait(utils.randomRangeNumber(1000, 5000)); // 初始等待1-5s
-    // await checkin.run(); // 执行
-
-    // const content = checkin.toString();
-    // console.log(content); // 打印结果
-
-    // messageList.push(content);
 
     try {
       await checkin.run(); // 执行
@@ -337,8 +332,14 @@ async function run(args) {
   
       messageList.push(content);
     } catch(e) {
-      console.log('报错了', e)
-      await run()
+      if (retry < 2) { // 最多重试3次（0,1,2）
+        console.log(`报错了，第${retry + 1}次重试`, e);
+        await run(args, retry + 1); // 递归重试并增加retry
+        return; // 避免多次pushMessage
+      } else {
+        console.log('重试已达上限，任务失败', e);
+        messageList.push(`签到失败: ${e.message}`);
+      }
     }
   }
 
