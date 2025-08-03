@@ -323,12 +323,23 @@ async function run(args) {
     const checkin = new CheckIn(cookie);
 
     await utils.wait(utils.randomRangeNumber(1000, 5000)); // 初始等待1-5s
-    await checkin.run(); // 执行
+    // await checkin.run(); // 执行
 
-    const content = checkin.toString();
-    console.log(content); // 打印结果
+    // const content = checkin.toString();
+    // console.log(content); // 打印结果
 
-    messageList.push(content);
+    // messageList.push(content);
+
+    try {
+      await checkin.run(); // 执行
+      const content = checkin.toString();
+      console.log(content); // 打印结果
+  
+      messageList.push(content);
+    } catch(e) {
+      console.log('报错了', e)
+      await run()
+    }
   }
 
   const message = messageList.join(`\n${"-".repeat(15)}\n`);
